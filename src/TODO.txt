@@ -1,0 +1,15 @@
+1 User Authentication & Roles
+-Customers and admins can log in and log out.
+-Role-based access: customers can see only their accounts. Admins can see/manage all users/accounts.
+
+2 Account Management
+-Create accounts (savings, checking, student).
+-View account details(balance, account type, account holder information)
+-Update account details (contact info).
+
+3 Transaction Management
+-Deposit(add money), withdraw(remove money), transfer money.
+-View transaction history( Viewing a detailed record of past transactions for a specific account)
+
+4 Customer Dashboard
+-Personalized info for each customer (displaying key information like recent transactions, account balances, and quick links to common features)
