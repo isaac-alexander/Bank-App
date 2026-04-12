@@ -11,7 +11,7 @@
         <h3 class="text-center text-success">Login</h3>
 
         <!-- error message -->
-        <div th:if="${error}" class="alert alert-danger text-center">
+        <div th:if="${error}" id="flashMessage" class="alert alert-danger text-center">
             <span th:text="${error}"></span>
         </div>
 
@@ -26,6 +26,10 @@
         <a href="/register" class="text-center mt-3 d-block">Register</a>
     </div>
 </div>
-
+<script>
+    setTimeout(function() {
+        document.getElementById("flashMessage").style.display = "none";
+    }, 5000); // 5 seconds
+</script>
 </body>
 </html>

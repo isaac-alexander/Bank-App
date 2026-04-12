@@ -14,11 +14,12 @@
 
         <input type="hidden" name="userId" th:value="${userId}">
 
-        <select name="accountType" class="form-control mb-3">
-            <option>Savings</option>
-            <option>Checking</option>
-            <option>Student</option>
-        </select>
+        <label th:for="${accountType}">Select Account Type</label>
+            <select name="accountType" class="form-control mb-3">
+                <option th:value="${savings}">Savings</option>
+                <option th:value="${checking}">Checking</option>
+            </select>
+
 
         <button class="btn btn-outline-success">Create</button>
 

@@ -14,15 +14,18 @@
     <a th:href="@{'/transactions/deposit/' + ${accountId}}" class="btn btn-outline-success">Deposit</a>
     <a th:href="@{'/transactions/withdraw/' + ${accountId}}" class="btn btn-outline-danger">Withdraw</a>
 
-    <!-- success message -->
-    <div th:if="${param.success}" class="alert alert-success">
-        <span th:text="${param.success}"></span>
+    <div id="flashMessage" >
+        <!-- success message -->
+        <div th:if="${param.success}" class="alert alert-success">
+            <span th:text="${param.success}"></span>
+        </div>
+
+        <!-- error message -->
+        <div th:if="${param.error}" class="alert alert-danger">
+            <span th:text="${param.error}"></span>
+        </div>
     </div>
 
-    <!-- error message -->
-    <div th:if="${param.error}" class="alert alert-danger">
-        <span th:text="${param.error}"></span>
-    </div>
 
     <table class="table mt-3">
 
@@ -45,6 +48,12 @@
     </table>
 
 </div>
+
+<script>
+    setTimeout(function() {
+        document.getElementById("flashMessage").style.display = "none";
+    }, 5000); // 5 seconds
+</script>
 
 </body>
 </html>

@@ -26,7 +26,7 @@ public class BankingAppApplication {
 
                 User user = new User(); // create user
 
-                user.setUsername("alex"); // username
+                user.setUsername("Alex"); // username
                 user.setPassword("1234"); // password
                 user.setPhoneNumber("08012345678"); // phone number
                 user.setRole("CUSTOMER"); // role
