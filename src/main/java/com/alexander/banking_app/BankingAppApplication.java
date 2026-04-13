@@ -15,27 +15,52 @@ public class BankingAppApplication {
     UserRepository userRepository;
 
     public static void main(String[] args) {
-		SpringApplication.run(BankingAppApplication.class, args);
-	}
+        SpringApplication.run(BankingAppApplication.class, args);
+    }
 
     @Bean
-    public CommandLineRunner run() {return args -> {
+    public CommandLineRunner run() {
+        return args -> {
 
-            // check if test user already exists
-            if (userRepository.findByUsername("alex") == null) {
+            // create admin user
+            if (userRepository.findByUsername("admin") == null) {
 
-                User user = new User(); // create user
+                User admin = new User();
 
-                user.setUsername("Alex"); // username
-                user.setPassword("1234"); // password
-                user.setPhoneNumber("08012345678"); // phone number
-                user.setRole("CUSTOMER"); // role
+                admin.setUsername("admin");
+                admin.setPassword("1234");
+                admin.setPhoneNumber("08000000000");
+                admin.setRole("ADMIN");
+                userRepository.save(admin);
 
-                userRepository.save(user); // save to database
+                System.out.println("admin user created");
+            }
 
-                System.out.println("test user created");
+            // create customer1
+            if (userRepository.findByUsername("stephen") == null) {
+
+                User stephen = new User();
+                stephen.setUsername("Stephen");
+                stephen.setPassword("1234");
+                stephen.setPhoneNumber("08011111111");
+                stephen.setRole("CUSTOMER");
+                userRepository.save(stephen);
+
+                System.out.println("stephen user created");
+            }
+
+            // create customer2
+            if (userRepository.findByUsername("miracle") == null) {
+
+                User miracle = new User();
+                miracle.setUsername("Miracle");
+                miracle.setPassword("1234");
+                miracle.setPhoneNumber("08022222222");
+                miracle.setRole("CUSTOMER");
+                userRepository.save(miracle);
+
+                System.out.println("miracle user created");
             }
         };
     }
-
 }

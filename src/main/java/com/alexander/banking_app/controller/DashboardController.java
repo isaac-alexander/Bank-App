@@ -18,7 +18,7 @@ import java.util.List;
 public class DashboardController {
 
     @Autowired
-    private UserRepository userRepository; // access database
+    private UserRepository userRepository;
 
     @Autowired
     private AccountRepository accountRepository;
@@ -32,32 +32,36 @@ public class DashboardController {
         // get logged in user from session
         User user = (User) session.getAttribute("loggedInUser");
 
-        // if user is not logged in redirect to login
+        // redirect if not logged in
         if (user == null) {
             return "redirect:/login";
         }
 
-        // send user to html
+        // send user to frontend
         model.addAttribute("user", user);
 
-        // get all accounts that belong to this user
-        List<Account> accounts = accountRepository.findByUserId(user.getId());
+        // get user from database
+        User dbUser = userRepository.findById(user.getId()).orElse(null);
 
-        // create account variable and set it to null first
-        // this prevents thymeleaf crash if no account exists
+        if (dbUser == null) {
+            return "redirect:/login";
+        }
+
+        // get accounts
+        List<Account> accounts = accountRepository.findByUser(dbUser);
+
+        // default account
         Account account = null;
 
-        // check if user has at least one account
+        // pick first account if exists
         if (!accounts.isEmpty()) {
-
-            // take the first account
             account = accounts.getFirst();
         }
 
-        // send account (can be null)
+        // send account to frontend
         model.addAttribute("account", account);
 
-        // if account exists get transactions
+        // load transactions if account exists
         if (account != null) {
 
             List<Transaction> transactions =
@@ -68,5 +72,4 @@ public class DashboardController {
 
         return "dashboard";
     }
-
 }

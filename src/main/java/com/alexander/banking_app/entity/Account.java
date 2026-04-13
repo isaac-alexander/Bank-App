@@ -15,11 +15,16 @@ public class Account {
 
     private double balance;
 
-    private Long userId; // link to user
+    @ManyToOne
+    @JoinColumn(name = "user_id") // foreign key in db
+    private User user;
 
     public Account() {
     }
 
+    public Long getId() {
+        return id;
+    }
 
     public Long getAccountNumber() {
         return accountNumber;
@@ -27,10 +32,6 @@ public class Account {
 
     public void setAccountNumber(Long accountNumber) {
         this.accountNumber = accountNumber;
-    }
-
-    public Long getId() {
-        return id;
     }
 
     public void setId(Long id) {
@@ -53,12 +54,11 @@ public class Account {
         this.balance = balance;
     }
 
-    public Long getUserId() {
-        return userId;
+    public User getUser() {
+        return user;
     }
 
-    public void setUserId(Long userId) {
-        this.userId = userId;
+    public void setUser(User user) {
+        this.user = user;
     }
-
 }

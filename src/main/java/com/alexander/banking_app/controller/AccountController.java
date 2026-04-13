@@ -2,8 +2,9 @@ package com.alexander.banking_app.controller;
 
 import com.alexander.banking_app.entity.Account;
 import com.alexander.banking_app.entity.User;
-import com.alexander.banking_app.repository.UserRepository;
 import com.alexander.banking_app.service.AccountService;
+import com.alexander.banking_app.repository.AccountRepository;
+import com.alexander.banking_app.repository.UserRepository;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -20,12 +21,14 @@ public class AccountController {
     private AccountService accountService;
 
     @Autowired
+    private AccountRepository accountRepository;
+
+    @Autowired
     private UserRepository userRepository;
 
-
-    // show all accounts for a user
+    // show accounts for logged in user
     @GetMapping
-    public String getUserAccounts(HttpSession session, Model model) {
+    public String getAccounts(HttpSession session, Model model) {
 
         User user = (User) session.getAttribute("loggedInUser");
 
@@ -43,19 +46,22 @@ public class AccountController {
 
     // show create account form
     @GetMapping("/create/{userId}")
-    public String showCreateForm(@PathVariable Long userId, Model model) {
+    public String showCreate(@PathVariable Long userId, Model model) {
 
-        model.addAttribute("userId", userId); // send user id
+        model.addAttribute("userId", userId);
 
-        return "create-account"; // create-account.html
+        return "create-account";
     }
 
-    // handle create account
+    // handle account creation
     @PostMapping("/create")
     public String createAccount(@RequestParam Long userId,
-                                @RequestParam String accountType) {
+                                @RequestParam String accountType,
+                                Model model) {
 
-        accountService.createAccount(userId, accountType); // create account
+        accountService.createAccount(userId, accountType);
+
+        model.addAttribute("success", "account created successfully");
 
         return "redirect:/accounts";
     }

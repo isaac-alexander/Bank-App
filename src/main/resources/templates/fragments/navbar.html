@@ -18,18 +18,38 @@
             <!-- navigation buttons -->
             <div>
 
-                <!-- dashboard -->
-                <a class="btn btn-outline-light me-2" th:href="@{/dashboard}">
+                <!-- dashboard (customer) -->
+                <a class="btn btn-outline-light me-2"
+                   th:if="${session.loggedInUser != null and session.loggedInUser.role == 'CUSTOMER'}"
+                   th:href="@{/dashboard}">
                     Dashboard
                 </a>
 
-                <!-- accounts -->
-                <a class="btn btn-outline-light me-2" th:href="@{/accounts}">
+                <!-- accounts (customer) -->
+                <a class="btn btn-outline-light me-2"
+                   th:if="${session.loggedInUser != null and session.loggedInUser.role == 'CUSTOMER'}"
+                   th:href="@{/accounts}">
                     Accounts
                 </a>
 
-                <!-- logout -->
-                <a class="btn btn-outline-danger" th:href="@{/logout}">
+                <!-- admin dashboard -->
+                <a class="btn btn-outline-light me-2"
+                   th:if="${session.loggedInUser != null and session.loggedInUser.role == 'ADMIN'}"
+                   th:href="@{/admin}">
+                    Admin Dashboard
+                </a>
+
+                <!-- view all users (admin future endpoint) -->
+                <a class="btn btn-outline-light me-2"
+                   th:if="${session.loggedInUser != null and session.loggedInUser.role == 'ADMIN'}"
+                   th:href="@{/admin}">
+                    Users
+                </a>
+
+                <!-- (ALL USERS)-->
+                <a class="btn btn-outline-danger"
+                   th:if="${session.loggedInUser != null}"
+                   th:href="@{/logout}">
                     Logout
                 </a>
 

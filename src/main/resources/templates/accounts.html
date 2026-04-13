@@ -16,6 +16,10 @@
     <a th:href="@{'/accounts/create/' + ${userId}}" class="btn btn-outline-success mb-3">
         Create Account
     </a>
+    <!-- success message -->
+    <div th:if="${success}" class="alert alert-success">
+        <span th:text="${success}"></span> <!-- display success message -->
+    </div>
 
     <table class="table table-bordered">
 

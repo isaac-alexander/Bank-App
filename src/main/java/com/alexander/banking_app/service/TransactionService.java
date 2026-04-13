@@ -6,10 +6,15 @@ import java.util.List;
 
 public interface TransactionService {
 
-    void deposit(Long accountId, double amount); // add money
+    // add money to account (admin only)
+    boolean deposit(Long accountId, double amount); // return true if success, false if account not found
 
-    boolean withdraw(Long accountId, double amount); // remove money
+    // remove money from account (admin only)
+    boolean withdraw(Long accountId, double amount); // return false if fails
 
-    List<Transaction> getHistory(Long accountId); // history
+    // get all transactions for an account
+    List<Transaction> getHistory(Long accountId); // transaction history
 
+    // transfer between accounts
+    boolean transfer(Long fromAccountId, Long toAccountNumber, double amount); // transfer money
 }

@@ -11,8 +11,13 @@
 
     <h3 class="text-success">Transactions</h3>
 
-    <a th:href="@{'/transactions/deposit/' + ${accountId}}" class="btn btn-outline-success">Deposit</a>
-    <a th:href="@{'/transactions/withdraw/' + ${accountId}}" class="btn btn-outline-danger">Withdraw</a>
+    <!-- admin buttons-->
+    <div th:if="${session.loggedInUser != null}">
+        <div th:if="${session.loggedInUser.role == 'ADMIN'}">
+            <a th:href="@{'/transactions/admin/deposit/' + ${accountId}}" class="btn btn-outline-success">Deposit</a>
+            <a th:href="@{'/transactions/admin/withdraw/' + ${accountId}}" class="btn btn-outline-danger">Withdraw</a>
+        </div>
+    </div>
 
     <div id="flashMessage" >
         <!-- success message -->

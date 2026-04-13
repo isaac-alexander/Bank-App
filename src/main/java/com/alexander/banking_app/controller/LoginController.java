@@ -6,7 +6,7 @@ import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-        import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 public class LoginController {
@@ -17,7 +17,8 @@ public class LoginController {
     @GetMapping("/login")
     public String loginPage() {
 
-        return "login"; // show login page
+        // show login page
+        return "login";
     }
 
     @PostMapping("/login")
@@ -29,19 +30,29 @@ public class LoginController {
         // find user by username
         User user = userService.findByUsername(username);
 
-        //Java optional
-
-        // check if valid
+        // check if user exists and password matches
         if (user != null && user.getPassword().equals(password)) {
 
-            session.setAttribute("loggedInUser", user); // store in session
+            // store logged in user in session
+            session.setAttribute("loggedInUser", user);
 
-            return "redirect:/dashboard"; // success
+            // admin goes to admin dashboard
+            if ("ADMIN".equalsIgnoreCase(user.getRole())) {
+                return "redirect:/admin";
+            }
+
+            // customer goes to user dashboard
+            if ("CUSTOMER".equalsIgnoreCase(user.getRole())) {
+                return "redirect:/dashboard";
+            }
+
+            // unknown role
+            return "redirect:/login";
         }
 
-        // send error
+        // error message
         redirectAttributes.addFlashAttribute("error", "incorrect username or password");
 
-        return "redirect:/login"; // go back to login
+        return "redirect:/login";
     }
 }

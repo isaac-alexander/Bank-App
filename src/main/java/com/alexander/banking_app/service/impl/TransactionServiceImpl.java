@@ -8,9 +8,7 @@ import com.alexander.banking_app.service.TransactionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class TransactionServiceImpl implements TransactionService {
@@ -22,69 +20,97 @@ public class TransactionServiceImpl implements TransactionService {
     private TransactionRepository transactionRepository;
 
     @Override
-    public void deposit(Long accountId, double amount) {
+    public boolean deposit(Long accountId, double amount) {
 
-        Optional<Account> optional = accountRepository.findById(accountId); // find account
+        // find account
+        Account account = accountRepository.findById(accountId).orElse(null);
 
-        if (optional.isPresent()) { // if found
-
-            Account account = optional.get(); // get account
-
-            account.setBalance(account.getBalance() + amount); // add money
-
-            accountRepository.save(account); // save
-
-            Transaction t = new Transaction(); // create transaction
-
-            t.setAccountId(accountId); // link account
-
-            t.setAmount(amount); // set amount
-
-            t.setType("DEPOSIT"); // type
-
-            t.setDate(LocalDateTime.now()); // time
-
-            transactionRepository.save(t); // save transaction
+        // check if account exists
+        if (account == null) {
+            return false;
         }
+
+        // add amount
+        account.setBalance(account.getBalance() + amount);
+
+        // save account
+        accountRepository.save(account);
+
+        return true;
     }
 
     @Override
     public boolean withdraw(Long accountId, double amount) {
 
-        Optional<Account> optional = accountRepository.findById(accountId);
+        // find account
+        Account account = accountRepository.findById(accountId).orElse(null);
 
-        if (optional.isPresent()) {
+        // check if account exists
+        if (account == null) {
+            return false;
+        }
 
-            Account account = optional.get();
+        // check balance
+        if (account.getBalance() < amount) {
+            return false;
+        }
 
-            if (account.getBalance() >= amount) { // check balance
+        // subtract amount
+        account.setBalance(account.getBalance() - amount);
 
-                account.setBalance(account.getBalance() - amount); // subtract
+        // save account
+        accountRepository.save(account);
 
-                accountRepository.save(account);
+        return true;
+    }
 
-                Transaction t = new Transaction();
+    @Override
+    public boolean transfer(Long fromAccountId, Long toAccountNumber, double amount) {
 
-                t.setAccountId(accountId);
+        // sender account
+        Account sender = accountRepository.findById(fromAccountId).orElse(null);
 
-                t.setAmount(amount);
+        // receiver account
+        Account receiver = null;
 
-                t.setType("WITHDRAW");
+        // find receiver by account number
+        for (Account acc : accountRepository.findAll()) {
 
-                t.setDate(LocalDateTime.now());
+            if (acc.getAccountNumber() != null &&
+                    acc.getAccountNumber().equals(toAccountNumber)) {
 
-                transactionRepository.save(t);
-
-                return true; // success
+                receiver = acc;
+                break;
             }
         }
 
-        return false; // failed
+        // validate accounts
+        if (sender == null || receiver == null) {
+            return false;
+        }
+
+        // check balance
+        if (sender.getBalance() < amount) {
+            return false;
+        }
+
+        // debit sender
+        sender.setBalance(sender.getBalance() - amount);
+
+        // credit receiver
+        receiver.setBalance(receiver.getBalance() + amount);
+
+        // save both accounts
+        accountRepository.save(sender);
+        accountRepository.save(receiver);
+
+        return true;
     }
 
     @Override
     public List<Transaction> getHistory(Long accountId) {
 
+        // return all transactions for account
         return transactionRepository.findByAccountId(accountId);
     }
 }

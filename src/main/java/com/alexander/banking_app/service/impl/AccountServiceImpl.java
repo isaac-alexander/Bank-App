@@ -35,17 +35,45 @@ public class AccountServiceImpl implements AccountService {
         // get phone number
         String phone = user.getPhoneNumber();
 
+        // safety check
+        if (phone == null || phone.length() < 10) {
+            throw new RuntimeException("invalid phone number");
+        }
+
         // remove first digit (08012345678 - 8012345678)
         String accountNumberString = phone.substring(1);
 
         // convert string to long
         Long accountNumber = Long.parseLong(accountNumberString);
 
+        // check if account type is empty
+        if (type == null || type.equals("")) {
+            throw new RuntimeException("account type is required");
+        }
+
+        // convert to uppercase for consistency
+        String normalizedType = type.toUpperCase();
+
+        // get all accounts for this user
+        List<Account> existingAccounts = accountRepository.findByUser(user);
+
+        // check if same account type already exists
+        for (Account acc : existingAccounts) {
+
+            if (acc.getAccountType() != null &&
+                    acc.getAccountType().equalsIgnoreCase(normalizedType)) {
+
+                throw new RuntimeException("account already exists for this type");
+            }
+        }
+
         // set values
         account.setAccountNumber(accountNumber); // set generated account number
-        account.setUserId(userId); // link to user
-        account.setAccountType(type); // savings, checking
-        account.setBalance(0); // default balance
+        account.setUser(user); // link account to user
+        account.setAccountType(normalizedType); // savings, checking
+
+        // default balance
+        account.setBalance(1000);
 
         return accountRepository.save(account); // save to database
     }
@@ -53,6 +81,15 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public List<Account> getUserAccounts(Long userId) {
 
-        return accountRepository.findByUserId(userId); // get all accounts for user
+        // get user first
+        User user = userRepository.findById(userId).orElse(null);
+
+        // check if user exists
+        if (user == null) {
+            throw new RuntimeException("user not found");
+        }
+
+        // fetch accounts using user object
+        return accountRepository.findByUser(user);
     }
 }

@@ -90,22 +90,16 @@
 
                     <div>
 
-                        <!-- deposit button -->
-                        <a th:href="@{'/transactions/deposit/' + ${account.id}}"
-                           class="btn btn-outline-success me-2">
-                            Deposit
-                        </a>
+                        <!-- show only for admin -->
+                        <div th:if="${user.role == 'ADMIN'}">
+                            <a th:href="@{'/transactions/admin/deposit/' + ${account.id}}" class="btn btn-outline-success">Deposit</a>
+                            <a  th:href="@{'/transactions/admin/withdraw/' + ${account.id}}" class="btn btn-outline-danger">Withdraw</a>
+                        </div>
 
-                        <!-- withdraw button -->
-                        <a th:href="@{'/transactions/withdraw/' + ${account.id}}"
-                           class="btn btn-outline-danger me-2">
-                            Withdraw
-                        </a>
-
-                        <!-- transfer button (future feature) -->
-                        <a href="#" class="btn btn-outline-secondary">
-                            Transfer
-                        </a>
+                        <!-- show only for customer -->
+                        <div th:if="${user.role == 'CUSTOMER'}">
+                            <a th:href="@{'/transactions/transfer/' + ${account.id}}" class="btn btn-outline-secondary">Transfer</a>
+                        </div>
 
                     </div>
 
