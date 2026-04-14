@@ -2,6 +2,7 @@ package com.alexander.banking_app.controller;
 
 import com.alexander.banking_app.entity.Transaction;
 import com.alexander.banking_app.entity.User;
+import com.alexander.banking_app.repository.TransactionRepository;
 import com.alexander.banking_app.service.TransactionService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +19,10 @@ public class TransactionController {
     @Autowired
     private TransactionService transactionService;
 
+    @Autowired
+    private TransactionRepository transactionRepository;
+
+
     // get transaction history
     @GetMapping("/{accountId}")
     public String getHistory(@PathVariable Long accountId, Model model) {
@@ -28,6 +33,27 @@ public class TransactionController {
         model.addAttribute("accountId", accountId); // keep account id
 
         return "transactions";
+    }
+
+    // admin view all transactions
+    @GetMapping("/admin/all")
+    public String getAllTransactions(HttpSession session, Model model) {
+
+        // get logged in user from session
+        User user = (User) session.getAttribute("loggedInUser");
+
+        // allow only admin
+        if (user == null || !"ADMIN".equalsIgnoreCase(user.getRole())) {
+            return "redirect:/login";
+        }
+
+        // fetch all transactions
+        List<Transaction> allTransactions = transactionRepository.findAll();
+
+        // send to view
+        model.addAttribute("transactions", allTransactions);
+
+        return "all-transactions";
     }
 
     // show admin deposit form

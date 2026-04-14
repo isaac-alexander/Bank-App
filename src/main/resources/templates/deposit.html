@@ -11,7 +11,7 @@
     <h3 class="text-success">Deposit Money</h3>
 
     <form method="post" th:action="@{/transactions/admin/deposit}">
-
+<!--        <form method="post" action="/transactions/admin/deposit">-->
         <input type="hidden" name="accountId" th:value="${accountId}">
 
         <input name="amount" class="form-control mb-3" placeholder="Enter amount">

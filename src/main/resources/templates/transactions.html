@@ -12,11 +12,18 @@
     <h3 class="text-success">Transactions</h3>
 
     <!-- admin buttons-->
-    <div th:if="${session.loggedInUser != null}">
-        <div th:if="${session.loggedInUser.role == 'ADMIN'}">
-            <a th:href="@{'/transactions/admin/deposit/' + ${accountId}}" class="btn btn-outline-success">Deposit</a>
-            <a th:href="@{'/transactions/admin/withdraw/' + ${accountId}}" class="btn btn-outline-danger">Withdraw</a>
-        </div>
+<!--    <div th:if="${session.loggedInUser != null}">-->
+<!--        <div th:if="${session.loggedInUser.role == 'ADMIN'}">-->
+<!--            <a th:href="@{'/transactions/admin/deposit/' + ${accountId}}" class="btn btn-outline-success">Deposit</a>-->
+<!--            <a th:href="@{'/transactions/admin/withdraw/' + ${accountId}}" class="btn btn-outline-danger">Withdraw</a>-->
+<!--        </div>-->
+<!--    </div>-->
+    <!-- admin only buttons -->
+    <div th:if="${session.loggedInUser != null && session.loggedInUser.role == 'ADMIN'}">
+        <!-- deposit button -->
+        <a th:href="@{'/transactions/admin/deposit/' + ${accountId}}" class="btn btn-outline-success">Deposit</a>
+        <!-- withdraw button -->
+        <a th:href="@{'/transactions/admin/withdraw/' + ${accountId}}" class="btn btn-outline-success">Withdraw</a>
     </div>
 
     <div id="flashMessage" >

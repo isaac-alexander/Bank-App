@@ -39,11 +39,18 @@
                     Admin Dashboard
                 </a>
 
-                <!-- view all users (admin future endpoint) -->
+                <!-- view all users -->
                 <a class="btn btn-outline-light me-2"
                    th:if="${session.loggedInUser != null and session.loggedInUser.role == 'ADMIN'}"
-                   th:href="@{/admin}">
+                   th:href="@{/admin/users}">
                     Users
+                </a>
+
+                <!-- view all transactions -->
+                <a class="btn btn-outline-light me-2"
+                   th:if="${session.loggedInUser != null and session.loggedInUser.role == 'ADMIN'}"
+                   th:href="@{/transactions/admin/all}">
+                    Transactions
                 </a>
 
                 <!-- (ALL USERS)-->

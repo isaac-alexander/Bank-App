@@ -13,24 +13,46 @@ import org.springframework.web.bind.annotation.GetMapping;
 public class AdminController {
 
     @Autowired
-    private UserRepository userRepository; // fetch users
+    private UserRepository userRepository;
 
     @Autowired
-    private AccountRepository accountRepository; // fetch accounts
+    private AccountRepository accountRepository;
 
+    // admin dashboard
     @GetMapping("/admin")
     public String adminDashboard(HttpSession session, Model model) {
 
-        User user = (User) session.getAttribute("loggedInUser"); // get session user
+        // get session user
+        User user = (User) session.getAttribute("loggedInUser");
 
-        // only admin allowed
-        if (user == null || !"ADMIN".equals(user.getRole())) {
+        // restrict to admin
+        if (user == null || !"ADMIN".equalsIgnoreCase(user.getRole())) {
             return "redirect:/login";
         }
 
-        model.addAttribute("users", userRepository.findAll()); // all users
-        model.addAttribute("accounts", accountRepository.findAll()); // all accounts
+        // send all users
+        model.addAttribute("users", userRepository.findAll());
 
-        return "admin-dashboard"; // admin page
+        // send all accounts
+        model.addAttribute("accounts", accountRepository.findAll());
+
+        return "admin-dashboard";
+    }
+
+    // view all users
+    @GetMapping("/admin/users")
+    public String viewAllUsers(HttpSession session, Model model) {
+
+        // check admin
+        User user = (User) session.getAttribute("loggedInUser");
+
+        if (user == null || !"ADMIN".equalsIgnoreCase(user.getRole())) {
+            return "redirect:/login";
+        }
+
+        // fetch users
+        model.addAttribute("users", userRepository.findAll());
+
+        return "all-users";
     }
 }
