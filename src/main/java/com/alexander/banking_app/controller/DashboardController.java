@@ -1,7 +1,7 @@
 package com.alexander.banking_app.controller;
 
+import com.alexander.banking_app.dto.UserDto;
 import com.alexander.banking_app.entity.Account;
-import com.alexander.banking_app.entity.Transaction;
 import com.alexander.banking_app.entity.User;
 import com.alexander.banking_app.repository.AccountRepository;
 import com.alexander.banking_app.repository.UserRepository;
@@ -12,7 +12,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
-import java.util.List;
+import java.util.Optional;
 
 @Controller
 public class DashboardController {
@@ -30,44 +30,48 @@ public class DashboardController {
     public String dashboard(HttpSession session, Model model) {
 
         // get logged in user from session
-        User user = (User) session.getAttribute("loggedInUser");
+        User sessionUser = (User) session.getAttribute("loggedInUser");
 
-        // redirect if not logged in
-        if (user == null) {
+        if (sessionUser == null) {
             return "redirect:/login";
         }
 
-        // send user to frontend
-        model.addAttribute("user", user);
+        // refresh user from database
+        Optional<User> userOptional = userRepository.findById(sessionUser.getId());
 
-        // get user from database
-        User dbUser = userRepository.findById(user.getId()).orElse(null);
-
-        if (dbUser == null) {
+        if (userOptional.isEmpty()) {
+            session.invalidate();
             return "redirect:/login";
         }
 
-        // get accounts
-        List<Account> accounts = accountRepository.findByUser(dbUser);
+        User user = userOptional.get();
 
-        // default account
-        Account account = null;
+        // dto mapping
+        UserDto dto = new UserDto();
+        dto.setId(user.getId());
+        dto.setUsername(user.getUsername());
+        dto.setFirstName(user.getFirstName());
+        dto.setLastName(user.getLastName());
+        dto.setDateOfBirth(user.getDateOfBirth());
+        dto.setAddress(user.getAddress());
 
-        // pick first account if exists
-        if (!accounts.isEmpty()) {
-            account = accounts.getFirst();
-        }
+        model.addAttribute("user", dto);
 
-        // send account to frontend
+        Account account = accountRepository.findByUserId(user.getId());
+
         model.addAttribute("account", account);
 
-        // load transactions if account exists
+        // transactions (only if account exists)
         if (account != null) {
+            model.addAttribute(
+                    "transactions",
+                    transactionService.getHistory(account.getId())
+            );
+        }
 
-            List<Transaction> transactions =
-                    transactionService.getHistory(account.getId());
-
-            model.addAttribute("transactions", transactions);
+        if ("ADMIN".equalsIgnoreCase(user.getRole())) {
+            model.addAttribute("users", userRepository.findAll());
+            model.addAttribute("accounts", accountRepository.findAll());
         }
 
         return "dashboard";

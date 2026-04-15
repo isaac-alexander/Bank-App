@@ -3,24 +3,42 @@
 <head>
     <title>Deposit</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
+
 <body>
+
 <div th:replace="fragments/navbar :: navbar"></div>
+
 <div class="container mt-5">
 
-    <h3 class="text-success">Deposit Money</h3>
+    <div class="card card-custom form-card p-4">
 
-    <form method="post" th:action="@{/transactions/admin/deposit}">
-<!--        <form method="post" action="/transactions/admin/deposit">-->
-        <input type="hidden" name="accountId" th:value="${accountId}">
+        <h4 class="text-success text-center mb-4">Deposit Money</h4>
 
-        <input name="amount" class="form-control mb-3" placeholder="Enter amount">
+        <form method="post"
+              th:action="@{/transactions/admin/deposit}">
 
-        <input name="password" type="password" class="form-control mb-3" placeholder="Enter your password">
+            <input type="hidden"
+                   name="accountId"
+                   th:value="${accountId}">
 
-        <button class="btn btn-outline-success">Deposit</button>
+            <input name="amount"
+                   class="form-control mb-3"
+                   placeholder="Enter amount">
 
-    </form>
+            <input name="password"
+                   type="password"
+                   class="form-control mb-3"
+                   placeholder="Enter your password">
+
+            <button class="btn btn-success-custom w-100">
+                Deposit
+            </button>
+
+        </form>
+
+    </div>
 
 </div>
 

@@ -1,41 +1,34 @@
-package com.alexander.banking_app.entity;
+package com.alexander.banking_app.dto;
 
-import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
 
-@Entity
-public class User {
+// dto used for registration with account creation
+public class UserDto {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id; // user id
+    private Long id;
 
-    private String username; // username for login
-
-    private String password; // password
-
+    private String username;
+    private String password;
     private String phoneNumber;
 
-    private String role; // CUSTOMER or ADMIN
+    // account type selected during registration
+    @NotBlank(message = "account type is required")
+    private String accountType;
 
+    @NotBlank(message = "first name is required")
     private String firstName;
 
+    @NotBlank(message = "last name is required")
     private String lastName;
 
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate dateOfBirth;
 
+    @NotBlank(message = "address is required")
     private String address;
-
-    public User() {
-    }
-
-    public User(String username, String password, String phoneNumber, String role) {
-        this.username = username;
-        this.password = password;
-        this.phoneNumber = phoneNumber;
-        this.role = role;
-    }
 
     public Long getId() {
         return id;
@@ -69,12 +62,12 @@ public class User {
         this.phoneNumber = phoneNumber;
     }
 
-    public String getRole() {
-        return role;
+    public String getAccountType() {
+        return accountType;
     }
 
-    public void setRole(String role) {
-        this.role = role;
+    public void setAccountType(String accountType) {
+        this.accountType = accountType;
     }
 
     public String getFirstName() {
@@ -108,5 +101,4 @@ public class User {
     public void setAddress(String address) {
         this.address = address;
     }
-
 }

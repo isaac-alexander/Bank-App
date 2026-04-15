@@ -12,13 +12,24 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class LoginController {
 
     @Autowired
-    private UserService userService; // used to fetch user
+    private UserService userService;
+
+    @GetMapping("/")
+    public String defaultRoute() {
+        return "redirect:/login";
+    }
 
     @GetMapping("/login")
-    public String loginPage() {
+    public String loginPage(HttpSession session) {
 
-        // show login page
-        return "login";
+        // check if user already logged in
+        User user = (User) session.getAttribute("loggedInUser");
+
+        if (user != null) {
+            return "redirect:/dashboard"; // send to dashboard directly
+        }
+
+        return "login"; // show login page
     }
 
     @PostMapping("/login")
@@ -27,30 +38,20 @@ public class LoginController {
                             HttpSession session,
                             RedirectAttributes redirectAttributes) {
 
-        // find user by username
+        // fetch user from database
         User user = userService.findByUsername(username);
 
-        // check if user exists and password matches
+        // validate credentials
         if (user != null && user.getPassword().equals(password)) {
 
-            // store logged in user in session
+            // store user in session
             session.setAttribute("loggedInUser", user);
 
-            // admin goes to admin dashboard
-            if ("ADMIN".equalsIgnoreCase(user.getRole())) {
-                return "redirect:/admin";
-            }
-
-            // customer goes to user dashboard
-            if ("CUSTOMER".equalsIgnoreCase(user.getRole())) {
-                return "redirect:/dashboard";
-            }
-
-            // unknown role
-            return "redirect:/login";
+            // all users go to dashboard
+            return "redirect:/dashboard";
         }
 
-        // error message
+        // invalid login
         redirectAttributes.addFlashAttribute("error", "incorrect username or password");
 
         return "redirect:/login";

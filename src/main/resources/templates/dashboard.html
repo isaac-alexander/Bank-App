@@ -1,33 +1,12 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+
 <head>
     <title>Dashboard</title>
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
-    <style>
-
-        /* sidebar styling */
-        .sidebar {
-            height: 100vh;
-            background-color: #f8f9fa;
-            padding-top: 20px;
-        }
-
-        /* circle for account display */
-        .account-circle {
-            width: 200px;
-            height: 200px;
-            border-radius: 50%;
-            background-color: #198754;
-            color: white;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            margin: auto;
-        }
-
-    </style>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
 
 <body>
@@ -42,64 +21,109 @@
         <!-- sidebar -->
         <div class="col-md-2 sidebar">
 
-            <ul class="nav flex-column">
+            <a th:href="@{/dashboard}">Dashboard</a>
 
-                <!-- dashboard link -->
-                <li class="nav-item">
-                    <a class="nav-link text-success" href="/dashboard">Dashboard</a>
-                </li>
+            <!-- customer: view own transactions -->
+            <a th:if="${account != null and session.loggedInUser.role == 'CUSTOMER'}"
+               th:href="@{'/transactions/' + ${account.id}}">
+                Transactions
+            </a>
 
-                <!-- accounts link -->
-                <li class="nav-item">
-                    <a class="nav-link text-success" href="/accounts">Accounts</a>
-                </li>
+            <!-- admin: all transactions -->
+            <a th:if="${session.loggedInUser.role == 'ADMIN'}"
+               th:href="@{/transactions/admin/all}">
+                All Transactions
+            </a>
 
-            </ul>
+            <!-- admin: manage users -->
+            <a th:if="${session.loggedInUser.role == 'ADMIN'}"
+               th:href="@{/admin/users}">
+                Users
+            </a>
+
+            <!-- edit profile -->
+            <a th:href="@{/user/edit}">
+                Edit Profile
+            </a>
+
+            <!-- logout -->
+            <a th:href="@{/logout}">
+                Logout
+            </a>
 
         </div>
 
         <!-- main content -->
-        <div class="col-md-10 mt-4">
+        <div class="col-md-10 p-4">
 
-            <!-- welcome user -->
-            <h2 class="text-success">
-                Welcome, <span th:text="${user.username}"></span>
-            </h2>
+            <!-- welcome -->
+            <div class="welcome-card">
+                <h3 class="page-title">
+                    Welcome, <span th:text="${user.username}"></span>
+                </h3>
+            </div>
 
-            <!-- account section -->
-            <!-- if account exists -->
-            <div th:if="${account != null}" class="row mt-4">
+            <!-- CUSTOMER VIEW  -->
+            <div th:if="${session.loggedInUser.role == 'CUSTOMER'}">
 
-                <!-- account circle -->
-                <div class="col-md-4">
+                <!-- user details -->
+                <div class="card p-3 mt-3">
+
+                    <h5>User Details</h5>
+
+                    <p><strong>First Name:</strong> <span th:text="${user.firstName}"></span></p>
+                    <p><strong>Last Name:</strong> <span th:text="${user.lastName}"></span></p>
+                    <p><strong>Date of Birth:</strong> <span th:text="${user.dateOfBirth}"></span></p>
+                    <p><strong>Address:</strong> <span th:text="${user.address}"></span></p>
+
+                </div>
+
+                <!-- account info -->
+                <div th:if="${account != null}" class="account-wrapper mt-3">
 
                     <div class="account-circle">
 
-                        <!-- show account number -->
+                        <small>Account Number</small>
                         <h5 th:text="${account.accountNumber}"></h5>
 
-                        <!-- show account type -->
-                        <p th:text="${account.accountType}"></p>
+                        <small>Account Type</small>
+                        <h5 th:text="${account.accountType}"></h5>
+
+                        <small>Balance</small>
+                        <h5 th:text="${account.balance}"></h5>
 
                     </div>
 
                 </div>
 
-                <!-- action buttons -->
-                <div class="col-md-8 d-flex align-items-center">
+                <!-- transactions -->
+                <div th:if="${account != null}" class="card mt-3">
 
-                    <div>
+                    <div class="card-header">
+                        Transaction History
+                    </div>
 
-                        <!-- show only for admin -->
-                        <div th:if="${user.role == 'ADMIN'}">
-                            <a th:href="@{'/transactions/admin/deposit/' + ${account.id}}" class="btn btn-outline-success">Deposit</a>
-                            <a  th:href="@{'/transactions/admin/withdraw/' + ${account.id}}" class="btn btn-outline-danger">Withdraw</a>
-                        </div>
+                    <div class="card-body table-wrapper">
 
-                        <!-- show only for customer -->
-                        <div th:if="${user.role == 'CUSTOMER'}">
-                            <a th:href="@{'/transactions/transfer/' + ${account.id}}" class="btn btn-outline-secondary">Transfer</a>
-                        </div>
+                        <table class="table transaction-table">
+
+                            <thead>
+                            <tr>
+                                <th>Type</th>
+                                <th>Amount</th>
+                                <th>Date</th>
+                            </tr>
+                            </thead>
+
+                            <tbody>
+                            <tr th:each="t : ${transactions}">
+                                <td th:text="${t.type}"></td>
+                                <td th:text="${t.amount}"></td>
+                                <td th:text="${t.date}"></td>
+                            </tr>
+                            </tbody>
+
+                        </table>
 
                     </div>
 
@@ -107,49 +131,83 @@
 
             </div>
 
-            <!-- if NO account -->
-            <div th:if="${account == null}" class="mt-4">
+            <!--  ADMIN VIEW -->
+            <div th:if="${session.loggedInUser.role == 'ADMIN'}">
 
-                <!-- warning message -->
-                <div class="alert alert-warning">
-                    No account found. Please create an account first.
+                <h4 class="text-danger mt-3">Admin Panel</h4>
+
+                <!-- quick actions -->
+                <div class="mb-3">
+                    <a href="/admin/users" class="btn btn-outline-primary">Users</a>
+                    <a href="/transactions/admin/all" class="btn btn-outline-dark">Transactions</a>
                 </div>
 
-                <!-- go to accounts -->
-                <a href="/accounts" class="btn btn-outline-success">
-                    Go to Accounts
-                </a>
+                <!-- users table -->
+                <div class="card mb-4">
+                    <div class="card-body">
 
-            </div>
+                        <h5>Users</h5>
 
-            <!-- transaction history -->
-            <!-- show only if account exists -->
-            <div th:if="${account != null}" class="mt-5">
+                        <table class="table">
+                            <thead>
+                            <tr>
+                                <th>Username</th>
+                                <th>Phone</th>
+                                <th>Role</th>
+                            </tr>
+                            </thead>
 
-                <h4 class="text-success">Transaction History</h4>
+                            <tbody>
+                            <tr th:each="u : ${users}">
+                                <td th:text="${u.username}"></td>
+                                <td th:text="${u.phoneNumber}"></td>
+                                <td th:text="${u.role}"></td>
+                            </tr>
+                            </tbody>
 
-                <table class="table table-bordered mt-3">
+                        </table>
 
-                    <thead>
-                    <tr>
-                        <th>Type</th>
-                        <th>Amount</th>
-                        <th>Date</th>
-                    </tr>
-                    </thead>
+                    </div>
+                </div>
 
-                    <tbody>
+                <!-- accounts table -->
+                <div class="card">
+                    <div class="card-body">
 
-                    <!-- loop through transactions -->
-                    <tr th:each="t : ${transactions}">
-                        <td th:text="${t.type}"></td>
-                        <td th:text="${t.amount}"></td>
-                        <td th:text="${t.date}"></td>
-                    </tr>
+                        <h5>Accounts</h5>
 
-                    </tbody>
+                        <table class="table">
+                            <thead>
+                            <tr>
+                                <th>Owner</th>
+                                <th>Number</th>
+                                <th>Type</th>
+                                <th>Balance</th>
+                                <th>Actions</th>
+                            </tr>
+                            </thead>
 
-                </table>
+                            <tbody>
+                            <tr th:each="a : ${accounts}">
+                                <td th:text="${a.user.username}"></td>
+                                <td th:text="${a.accountNumber}"></td>
+                                <td th:text="${a.accountType}"></td>
+                                <td th:text="${a.balance}"></td>
+
+                                <td>
+                                    <a th:href="@{'/transactions/admin/deposit/' + ${a.id}}"
+                                       class="btn btn-success btn-sm">Deposit</a>
+
+                                    <a th:href="@{'/transactions/admin/withdraw/' + ${a.id}}"
+                                       class="btn btn-danger btn-sm">Withdraw</a>
+                                </td>
+                            </tr>
+                            </tbody>
+
+                        </table>
+
+                    </div>
+                </div>
 
             </div>
 
