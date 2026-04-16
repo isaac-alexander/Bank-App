@@ -8,13 +8,15 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
+import java.util.Optional;
+
 @Controller
 public class AdminController {
 
     @Autowired
     private UserRepository userRepository;
 
-    // view all users page
+    // view all users
     @GetMapping("/admin/users")
     public String viewAllUsers(Authentication authentication, Model model) {
 
@@ -26,15 +28,23 @@ public class AdminController {
         // get username from spring security
         String username = authentication.getName();
 
-        // fetch user from database
-        User user = userRepository.findByUsername(username);
+        // fetch user as optional
+        Optional<User> optionalUser = userRepository.findByUsername(username);
 
-        // extra safety check for admin
-        if (user == null || !"ADMIN".equalsIgnoreCase(user.getRole())) {
+        // check if user exists
+        if (optionalUser.isEmpty()) {
             return "redirect:/login";
         }
 
-        // send users to view
+        // get actual user
+        User user = optionalUser.get();
+
+        // check if user is admin
+        if (!"ADMIN".equalsIgnoreCase(user.getRole())) {
+            return "redirect:/login";
+        }
+
+        // send all users to view
         model.addAttribute("users", userRepository.findAll());
 
         return "all-users";

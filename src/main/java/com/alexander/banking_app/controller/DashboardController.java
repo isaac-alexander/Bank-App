@@ -36,8 +36,7 @@ public class DashboardController {
 
         String username = authentication.getName();
 
-        Optional<User> userOptional =
-                Optional.ofNullable(userRepository.findByUsername(username));
+        Optional<User> userOptional = userRepository.findByUsername(username);
 
         if (userOptional.isEmpty()) {
             return "redirect:/login";

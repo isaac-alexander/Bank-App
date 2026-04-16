@@ -64,8 +64,7 @@ public class UserController {
 
         String username = authentication.getName();
 
-        Optional<User> optionalUser =
-                Optional.ofNullable(userRepository.findByUsername(username));
+        Optional<User> optionalUser = userRepository.findByUsername(username);
 
         if (optionalUser.isEmpty()) {
             return "redirect:/login";
@@ -95,8 +94,7 @@ public class UserController {
 
         String username = authentication.getName();
 
-        Optional<User> optionalUser =
-                Optional.ofNullable(userRepository.findByUsername(username));
+        Optional<User> optionalUser = userRepository.findByUsername(username);
 
         if (optionalUser.isEmpty()) {
             return "redirect:/login";

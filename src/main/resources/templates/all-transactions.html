@@ -36,8 +36,7 @@
                     <td class="fw-bold"
                         th:text="${t.amount}"></td>
                     <td th:text="${t.accountId}"></td>
-                    <td th:text="${t.date}"></td>
-                </tr>
+                    <td th:text="${#temporals.format(t.date, 'dd MMM yyyy HH:mm')}"></td>                </tr>
 
                 </tbody>
 

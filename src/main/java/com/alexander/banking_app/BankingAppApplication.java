@@ -35,7 +35,7 @@ public class BankingAppApplication {
         return args -> {
 
             // create admin user
-            if (userRepository.findByUsername("admin") == null) {
+            if (userRepository.findByUsername("admin").isEmpty()) {
 
                 User admin = new User();
 
@@ -55,7 +55,7 @@ public class BankingAppApplication {
             }
 
             // customer 1 with savings account
-            if (userRepository.findByUsername("stephen") == null) {
+            if (userRepository.findByUsername("stephen").isEmpty()) {
 
                 User stephen = new User();
 
@@ -83,7 +83,7 @@ public class BankingAppApplication {
             }
 
             // customer 2 with checking account
-            if (userRepository.findByUsername("miracle") == null) {
+            if (userRepository.findByUsername("miracle").isEmpty()) {
 
                 User miracle = new User();
 

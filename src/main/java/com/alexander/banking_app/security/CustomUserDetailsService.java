@@ -8,6 +8,7 @@ import org.springframework.security.core.userdetails.*;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
+import java.util.Optional;
 
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
@@ -19,15 +20,20 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 
-        User user = userService.findByUsername(username);
+        // get user as optional
+        Optional<User> optionalUser = userService.findByUsername(username);
 
-        if (user == null) { // if not found
+        // if not found throw error
+        if (optionalUser.isEmpty()) {
             throw new UsernameNotFoundException("user not found");
         }
 
+        // get actual user
+        User user = optionalUser.get();
+
         return new org.springframework.security.core.userdetails.User(
                 user.getUsername(), // username
-                user.getPassword(), // password
+                user.getPassword(), // encrypted password
                 Collections.singleton(() -> "ROLE_" + user.getRole()) // role
         );
     }

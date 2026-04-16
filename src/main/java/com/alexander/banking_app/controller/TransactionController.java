@@ -13,6 +13,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @Controller
 @RequestMapping("/transactions")
@@ -29,8 +30,17 @@ public class TransactionController {
 
     // method to get current user
     private User getCurrentUser(Authentication authentication) {
+
+        // if not logged in return null
         if (authentication == null) return null;
-        return userRepository.findByUsername(authentication.getName());
+
+        // get user from database as optional
+        Optional<User> optionalUser = userRepository.findByUsername(authentication.getName());
+
+        // if user not found return null
+        return optionalUser.orElse(null);
+
+        // return actual user
     }
 
     // show customer transaction history
