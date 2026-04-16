@@ -11,6 +11,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.security.core.Authentication;
+
 
 import java.util.Optional;
 
@@ -51,27 +53,26 @@ public class UserController {
     }
 
     // show edit page
+    // only showing changed methods
+
     @GetMapping("/edit")
-    public String editUser(HttpSession session, Model model) {
+    public String editUser(Authentication authentication, Model model) {
 
-        // get session user
-        User sessionUser = (User) session.getAttribute("loggedInUser");
-
-        if (sessionUser == null) {
+        if (authentication == null) {
             return "redirect:/login";
         }
 
-        // fetch from database using optional
-        Optional<User> optionalUser = userRepository.findById(sessionUser.getId());
+        String username = authentication.getName();
+
+        Optional<User> optionalUser =
+                Optional.ofNullable(userRepository.findByUsername(username));
 
         if (optionalUser.isEmpty()) {
-            session.invalidate();
             return "redirect:/login";
         }
 
         User user = optionalUser.get();
 
-        // map entity - dto
         UserDto dto = new UserDto();
         dto.setId(user.getId());
         dto.setFirstName(user.getFirstName());
@@ -84,40 +85,33 @@ public class UserController {
         return "edit-user";
     }
 
-    // update user
     @PostMapping("/update")
-    public String updateUser(@Valid @ModelAttribute("userDto") UserDto userDto,
-                             HttpSession session) {
+    public String updateUser(@ModelAttribute("userDto") UserDto userDto,
+                             Authentication authentication) {
 
-        // get session user
-        User sessionUser = (User) session.getAttribute("loggedInUser");
-
-        if (sessionUser == null) {
+        if (authentication == null) {
             return "redirect:/login";
         }
 
-        // fetch user using optional
-        Optional<User> optionalUser = userRepository.findById(sessionUser.getId());
+        String username = authentication.getName();
+
+        Optional<User> optionalUser =
+                Optional.ofNullable(userRepository.findByUsername(username));
 
         if (optionalUser.isEmpty()) {
-            session.invalidate();
             return "redirect:/login";
         }
 
         User user = optionalUser.get();
 
-        // update
         user.setFirstName(userDto.getFirstName());
         user.setLastName(userDto.getLastName());
         user.setDateOfBirth(userDto.getDateOfBirth());
         user.setAddress(userDto.getAddress());
 
-        // save updated user
         userRepository.save(user);
-
-        // update session user
-        session.setAttribute("loggedInUser", user);
 
         return "redirect:/dashboard";
     }
+
 }

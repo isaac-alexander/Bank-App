@@ -8,107 +8,125 @@ import com.alexander.banking_app.service.TransactionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class TransactionServiceImpl implements TransactionService {
 
     @Autowired
-    private AccountRepository accountRepository;
-
-    @Autowired
     private TransactionRepository transactionRepository;
 
+    @Autowired
+    private AccountRepository accountRepository;
+
+    // get transaction history
     @Override
-    public boolean deposit(Long accountId, double amount) {
+    public List<Transaction> getHistory(Long accountId) {
 
-        // fetch account safely
-        Optional<Account> accountOptional = accountRepository.findById(accountId);
+        return transactionRepository
+                .findByAccountIdOrderByDateDesc(accountId);
+    }
 
-        if (accountOptional.isEmpty()) {
-            return false;
+    // admin get all
+    @Override
+    public List<Transaction> getAllTransactions() {
+        return transactionRepository.findAll();
+    }
+
+    // deposit
+    @Override
+    public void deposit(Long accountId, double amount) {
+
+        if (amount <= 0) {
+            throw new RuntimeException("invalid amount");
         }
 
-        Account account = accountOptional.get();
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new RuntimeException("account not found"));
 
         account.setBalance(account.getBalance() + amount);
 
-        accountRepository.save(account);
+        Transaction t = new Transaction();
+        t.setAccountId(accountId);
+        t.setAmount(amount);
+        t.setType("DEPOSIT");
+        t.setDate(LocalDateTime.now());
 
-        return true;
+        accountRepository.save(account);
+        transactionRepository.save(t);
     }
 
+    // withdraw
     @Override
-    public boolean withdraw(Long accountId, double amount) {
+    public void withdraw(Long accountId, double amount) {
 
-        Optional<Account> accountOptional = accountRepository.findById(accountId);
-
-        if (accountOptional.isEmpty()) {
-            return false;
+        if (amount <= 0) {
+            throw new RuntimeException("invalid amount");
         }
 
-        Account account = accountOptional.get();
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new RuntimeException("account not found"));
 
         if (account.getBalance() < amount) {
-            return false;
+            throw new RuntimeException("insufficient balance");
         }
 
         account.setBalance(account.getBalance() - amount);
 
-        accountRepository.save(account);
+        Transaction t = new Transaction();
+        t.setAccountId(accountId);
+        t.setAmount(amount);
+        t.setType("WITHDRAW");
+        t.setDate(LocalDateTime.now());
 
-        return true;
+        accountRepository.save(account);
+        transactionRepository.save(t);
     }
 
+    // transfer
     @Override
-    public boolean transfer(Long fromAccountId, Long toAccountNumber, double amount) {
+    public void transfer(Long fromAccountId,
+                         Long toAccountNumber,
+                         double amount) {
 
-        // sender
-        Optional<Account> senderOptional = accountRepository.findById(fromAccountId);
-
-        if (senderOptional.isEmpty()) {
-            return false;
+        if (amount <= 0) {
+            throw new RuntimeException("invalid amount");
         }
 
-        Account sender = senderOptional.get();
+        Account sender = accountRepository.findById(fromAccountId)
+                .orElseThrow(() -> new RuntimeException("sender not found"));
 
-        // find receiver
-        Account receiver = null;
+        Account receiver = accountRepository
+                .findByAccountNumber(toAccountNumber)
+                .orElseThrow(() -> new RuntimeException("receiver not found"));
 
-        List<Account> allAccounts = accountRepository.findAll();
-
-        for (Account acc : allAccounts) {
-            if (acc.getAccountNumber() != null &&
-                    acc.getAccountNumber().equals(toAccountNumber)) {
-
-                receiver = acc;
-                break;
-            }
-        }
-
-        // validate receiver
-        if (receiver == null) {
-            return false;
-        }
-
-        // check balance
         if (sender.getBalance() < amount) {
-            return false;
+            throw new RuntimeException("insufficient balance");
         }
 
-        // transfer
+        // update balances
         sender.setBalance(sender.getBalance() - amount);
         receiver.setBalance(receiver.getBalance() + amount);
+
+        // sender transaction
+        Transaction debit = new Transaction();
+        debit.setAccountId(sender.getId());
+        debit.setAmount(amount);
+        debit.setType("TRANSFER_OUT");
+        debit.setDate(LocalDateTime.now());
+
+        // receiver transaction
+        Transaction credit = new Transaction();
+        credit.setAccountId(receiver.getId());
+        credit.setAmount(amount);
+        credit.setType("TRANSFER_IN");
+        credit.setDate(LocalDateTime.now());
 
         accountRepository.save(sender);
         accountRepository.save(receiver);
 
-        return true;
-    }
-
-    @Override
-    public List<Transaction> getHistory(Long accountId) {
-        return transactionRepository.findByAccountId(accountId);
+        transactionRepository.save(debit);
+        transactionRepository.save(credit);
     }
 }

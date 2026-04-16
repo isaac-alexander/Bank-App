@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.w3.org/1999/xhtml">
 
 <body>
 
@@ -10,46 +11,23 @@
 
         <div class="container">
 
-            <a class="navbar-brand text-white" th:href="@{/dashboard}">
-                Bank App
-            </a>
+            <a class="navbar-brand text-white" th:href="@{/dashboard}">Bank App</a>
 
             <div class="d-flex gap-2">
 
                 <!-- customer links -->
-                <a class="btn btn-outline-light"
-                   th:if="${session.loggedInUser.role == 'CUSTOMER'}"
-                   th:href="@{/dashboard}">
-                    Dashboard
-                </a>
+                <a class="btn btn-outline-light" sec:authorize="isAuthenticated()" th:href="@{/dashboard}">Dashboard</a>
 
 
                 <!-- admin links -->
-                <a class="btn btn-outline-light"
-                   th:if="${session.loggedInUser.role == 'ADMIN'}"
-                   th:href="@{/admin}">
-                    Admin
-                </a>
 
-                <a class="btn btn-outline-light"
-                   th:if="${session.loggedInUser.role == 'ADMIN'}"
-                   th:href="@{/admin/users}">
-                    Users
-                </a>
+                <!-- admin only -->
+                <a class="btn btn-outline-light" sec:authorize="hasRole('ADMIN')" th:href="@{/admin/users}">Users</a>
 
-                <a class="btn btn-outline-light"
-                   th:if="${session.loggedInUser.role == 'ADMIN'}"
-                   th:href="@{/transactions/admin/all}">
-                    Transactions
-                </a>
+                <a class="btn btn-outline-light" sec:authorize="hasRole('ADMIN')" th:href="@{/transactions/admin/all}">Transactions</a>
 
                 <!-- logout -->
-                <a class="btn btn-danger"
-                   th:if="${session.loggedInUser != null}"
-                   th:href="@{/logout}">
-                    Logout
-                </a>
-
+                <a class="btn btn-danger" sec:authorize="isAuthenticated()" th:href="@{/logout}">Logout</a>
             </div>
 
         </div>

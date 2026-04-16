@@ -9,6 +9,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDate;
 
@@ -20,6 +21,10 @@ public class BankingAppApplication {
 
     @Autowired
     AccountRepository accountRepository;
+
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     public static void main(String[] args) {
         SpringApplication.run(BankingAppApplication.class, args);
@@ -35,7 +40,7 @@ public class BankingAppApplication {
                 User admin = new User();
 
                 admin.setUsername("admin");
-                admin.setPassword("1234");
+                admin.setPassword(passwordEncoder.encode("1234"));
                 admin.setPhoneNumber("08000000000");
                 admin.setRole("ADMIN");
 
@@ -55,7 +60,7 @@ public class BankingAppApplication {
                 User stephen = new User();
 
                 stephen.setUsername("stephen");
-                stephen.setPassword("1234");
+                stephen.setPassword(passwordEncoder.encode("1234"));
                 stephen.setPhoneNumber("08011111111");
                 stephen.setRole("CUSTOMER");
 
@@ -83,7 +88,7 @@ public class BankingAppApplication {
                 User miracle = new User();
 
                 miracle.setUsername("miracle");
-                miracle.setPassword("1234");
+                miracle.setPassword(passwordEncoder.encode("1234"));
                 miracle.setPhoneNumber("08022222222");
                 miracle.setRole("CUSTOMER");
 

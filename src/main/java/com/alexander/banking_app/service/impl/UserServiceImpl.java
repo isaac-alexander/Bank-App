@@ -8,6 +8,7 @@ import com.alexander.banking_app.repository.UserRepository;
 import com.alexander.banking_app.service.UserService;
 import org.antlr.v4.runtime.misc.LogManager;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -21,6 +22,9 @@ public class UserServiceImpl implements UserService {
     @Autowired
     AccountRepository accountRepository;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     @Override
     public User registerUser(UserDto userDto) {
 
@@ -28,8 +32,8 @@ public class UserServiceImpl implements UserService {
         User user = new User();
 
         user.setUsername(userDto.getUsername());
-        user.setPassword(userDto.getPassword());
-        user.setPhoneNumber(userDto.getPhoneNumber());
+        // encrypt password before saving
+        user.setPassword(passwordEncoder.encode(userDto.getPassword()));        user.setPhoneNumber(userDto.getPhoneNumber());
 
         user.setFirstName(userDto.getFirstName());
         user.setLastName(userDto.getLastName());

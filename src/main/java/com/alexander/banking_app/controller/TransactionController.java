@@ -1,11 +1,13 @@
 package com.alexander.banking_app.controller;
 
+import com.alexander.banking_app.entity.Account;
 import com.alexander.banking_app.entity.Transaction;
 import com.alexander.banking_app.entity.User;
-import com.alexander.banking_app.repository.TransactionRepository;
+import com.alexander.banking_app.repository.AccountRepository;
+import com.alexander.banking_app.repository.UserRepository;
 import com.alexander.banking_app.service.TransactionService;
-import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -20,53 +22,80 @@ public class TransactionController {
     private TransactionService transactionService;
 
     @Autowired
-    private TransactionRepository transactionRepository;
+    private UserRepository userRepository;
 
+    @Autowired
+    private AccountRepository accountRepository;
 
-    // get transaction history
+    // method to get current user
+    private User getCurrentUser(Authentication authentication) {
+        if (authentication == null) return null;
+        return userRepository.findByUsername(authentication.getName());
+    }
+
+    // show customer transaction history
     @GetMapping("/{accountId}")
-    public String getHistory(@PathVariable Long accountId, Model model) {
+    public String getHistory(@PathVariable Long accountId,
+                             Authentication authentication,
+                             Model model) {
 
-        List<Transaction> list = transactionService.getHistory(accountId); // fetch transactions
+        User user = getCurrentUser(authentication);
 
-        model.addAttribute("transactions", list); // send to html
-        model.addAttribute("accountId", accountId); // keep account id
+        if (user == null) {
+            return "redirect:/login";
+        }
+
+        Account account = accountRepository.findById(accountId)
+                .orElse(null);
+
+        if (account == null) {
+            return "redirect:/dashboard";
+        }
+
+        // CUSTOMER must own the account
+        if ("CUSTOMER".equalsIgnoreCase(user.getRole())) {
+
+            if (!account.getUser().getId().equals(user.getId())) {
+                return "redirect:/dashboard";
+            }
+        }
+
+        List<Transaction> transactions =
+                transactionService.getHistory(accountId);
+
+        model.addAttribute("transactions", transactions);
+        model.addAttribute("accountId", accountId);
 
         return "transactions";
     }
 
-    // admin view all transactions
+    // admin all transactions
     @GetMapping("/admin/all")
-    public String getAllTransactions(HttpSession session, Model model) {
+    public String getAllTransactions(Authentication authentication,
+                                     Model model) {
 
-        // get logged in user from session
-        User user = (User) session.getAttribute("loggedInUser");
+        User user = getCurrentUser(authentication);
 
-        // allow only admin
         if (user == null || !"ADMIN".equalsIgnoreCase(user.getRole())) {
-            return "redirect:/login";
+            return "redirect:/dashboard";
         }
 
-        // fetch all transactions
-        List<Transaction> allTransactions = transactionRepository.findAll();
+        model.addAttribute("transactions",
+                transactionService.getAllTransactions());
 
-        // send to view
-        model.addAttribute("transactions", allTransactions);
-
-        return "all-transactions";
+        return "admin-transactions";
     }
 
-    // show admin deposit form
+    // show deposit page
     @GetMapping("/admin/deposit/{accountId}")
     public String showAdminDeposit(@PathVariable Long accountId,
-                                   Model model,
-                                   HttpSession session) {
+                                   Authentication authentication,
+                                   Model model) {
 
-        User user = (User) session.getAttribute("loggedInUser");
+        User user = getCurrentUser(authentication);
 
-        // allow only admin
         if (user == null || !"ADMIN".equalsIgnoreCase(user.getRole())) {
-            return "redirect:/login";
+            return "redirect:/dashboard";
         }
 
         model.addAttribute("accountId", accountId);
@@ -74,45 +103,33 @@ public class TransactionController {
         return "deposit";
     }
 
-    // handle admin deposit
+    // handle deposit
     @PostMapping("/admin/deposit")
     public String adminDeposit(@RequestParam Long accountId,
                                @RequestParam double amount,
-                               @RequestParam String password,
-                               HttpSession session) {
+                               Authentication authentication) {
 
-        User user = (User) session.getAttribute("loggedInUser");
+        User user = getCurrentUser(authentication);
 
-        // allow only admin
         if (user == null || !"ADMIN".equalsIgnoreCase(user.getRole())) {
-            return "redirect:/login";
+            return "redirect:/dashboard";
         }
 
-        // check password
-        if (!user.getPassword().equals(password)) {
-            return "redirect:/transactions/" + accountId + "?error=wrong password";
-        }
+        transactionService.deposit(accountId, amount);
 
-        boolean success = transactionService.deposit(accountId, amount);
-
-        if (!success) {
-            return "redirect:/transactions/" + accountId + "?error=account not found";
-        }
-
-        return "redirect:/transactions/" + accountId + "?success=deposit successful";
+        return "redirect:/dashboard?success=deposit successful";
     }
 
-    // show admin withdraw form
+    // show withdraw page
     @GetMapping("/admin/withdraw/{accountId}")
     public String showAdminWithdraw(@PathVariable Long accountId,
-                                    Model model,
-                                    HttpSession session) {
+                                    Authentication authentication,
+                                    Model model) {
 
-        User user = (User) session.getAttribute("loggedInUser");
+        User user = getCurrentUser(authentication);
 
-        // allow only admin
         if (user == null || !"ADMIN".equalsIgnoreCase(user.getRole())) {
-            return "redirect:/login";
+            return "redirect:/dashboard";
         }
 
         model.addAttribute("accountId", accountId);
@@ -120,78 +137,55 @@ public class TransactionController {
         return "withdraw";
     }
 
-    // handle admin withdraw
+    // handle withdraw
     @PostMapping("/admin/withdraw")
     public String adminWithdraw(@RequestParam Long accountId,
                                 @RequestParam double amount,
-                                @RequestParam String password,
-                                HttpSession session) {
+                                Authentication authentication) {
 
-        User user = (User) session.getAttribute("loggedInUser");
+        User user = getCurrentUser(authentication);
 
-        // allow only admin
         if (user == null || !"ADMIN".equalsIgnoreCase(user.getRole())) {
-            return "redirect:/login";
+            return "redirect:/dashboard";
         }
 
-        // check password
-        if (!user.getPassword().equals(password)) {
-            return "redirect:/transactions/" + accountId + "?error=wrong password";
-        }
+        transactionService.withdraw(accountId, amount);
 
-        boolean success = transactionService.withdraw(accountId, amount);
-
-        if (!success) {
-            return "redirect:/transactions/" + accountId + "?error=insufficient balance or account not found";
-        }
-
-        return "redirect:/transactions/" + accountId + "?success=withdraw successful";
+        return "redirect:/dashboard?success=withdraw successful";
     }
 
-    // show transfer page for customer
+    // transfer page
     @GetMapping("/transfer/{accountId}")
-    public String showTransferPage(@PathVariable Long accountId, Model model, HttpSession session) {
+    public String showTransferPage(@PathVariable Long accountId,
+                                   Authentication authentication,
+                                   Model model) {
 
-        // get logged in user
-        User user = (User) session.getAttribute("loggedInUser");
+        User user = getCurrentUser(authentication);
 
-        // allow only customer
-        if (user == null || !"CUSTOMER".equalsIgnoreCase(user.getRole())) {
+        if (user == null) {
             return "redirect:/login";
         }
 
-        // pass account id to view
         model.addAttribute("accountId", accountId);
 
         return "transfer";
     }
 
-    // handle transfer for customers only
+    // handle transfer
     @PostMapping("/transfer")
     public String transfer(@RequestParam Long accountId,
                            @RequestParam Long accountNumber,
                            @RequestParam double amount,
-                           @RequestParam String password,
-                           HttpSession session) {
+                           Authentication authentication) {
 
-        User user = (User) session.getAttribute("loggedInUser");
+        User user = getCurrentUser(authentication);
 
-        // allow only customer
-        if (user == null || !"CUSTOMER".equalsIgnoreCase(user.getRole())) {
+        if (user == null) {
             return "redirect:/login";
         }
 
-        // check password
-        if (!user.getPassword().equals(password)) {
-            return "redirect:/transactions/" + accountId + "?error=wrong password";
-        }
+        transactionService.transfer(accountId, accountNumber, amount);
 
-        boolean success = transactionService.transfer(accountId, accountNumber, amount);
-
-        if (!success) {
-            return "redirect:/transactions/" + accountId + "?error=transfer failed";
-        }
-
-        return "redirect:/transactions/" + accountId + "?success=transfer successful";
+        return "redirect:/dashboard?success=transfer successful";
     }
 }

@@ -6,8 +6,8 @@ import com.alexander.banking_app.entity.User;
 import com.alexander.banking_app.repository.AccountRepository;
 import com.alexander.banking_app.repository.UserRepository;
 import com.alexander.banking_app.service.TransactionService;
-import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,26 +27,25 @@ public class DashboardController {
     private TransactionService transactionService;
 
     @GetMapping("/dashboard")
-    public String dashboard(HttpSession session, Model model) {
+    public String dashboard(Authentication authentication, Model model) {
 
-        // get logged in user from session
-        User sessionUser = (User) session.getAttribute("loggedInUser");
-
-        if (sessionUser == null) {
+        // check login
+        if (authentication == null) {
             return "redirect:/login";
         }
 
-        // refresh user from database
-        Optional<User> userOptional = userRepository.findById(sessionUser.getId());
+        String username = authentication.getName();
+
+        Optional<User> userOptional =
+                Optional.ofNullable(userRepository.findByUsername(username));
 
         if (userOptional.isEmpty()) {
-            session.invalidate();
             return "redirect:/login";
         }
 
         User user = userOptional.get();
 
-        // dto mapping
+        // map user to dto
         UserDto dto = new UserDto();
         dto.setId(user.getId());
         dto.setUsername(user.getUsername());
@@ -57,11 +56,10 @@ public class DashboardController {
 
         model.addAttribute("user", dto);
 
-        Account account = accountRepository.findByUserId(user.getId());
+        Account account = accountRepository.findByUser(user).orElse(null);
 
         model.addAttribute("account", account);
 
-        // transactions (only if account exists)
         if (account != null) {
             model.addAttribute(
                     "transactions",
@@ -69,6 +67,7 @@ public class DashboardController {
             );
         }
 
+        // admin data
         if ("ADMIN".equalsIgnoreCase(user.getRole())) {
             model.addAttribute("users", userRepository.findAll());
             model.addAttribute("accounts", accountRepository.findAll());

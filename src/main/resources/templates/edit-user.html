@@ -22,7 +22,7 @@
         <input type="text"
                th:field="*{firstName}"
                class="form-control mb-2"
-               placeholder="First Name">
+               placeholder="First Name" required>
         <div class="text-danger"
              th:if="${#fields.hasErrors('firstName')}"
              th:errors="*{firstName}"></div>
@@ -31,7 +31,7 @@
         <input type="text"
                th:field="*{lastName}"
                class="form-control mb-2"
-               placeholder="Last Name">
+               placeholder="Last Name" required>
         <div class="text-danger"
              th:if="${#fields.hasErrors('lastName')}"
              th:errors="*{lastName}"></div>
@@ -39,13 +39,13 @@
         <!-- dob -->
         <input type="date"
                th:field="*{dateOfBirth}"
-               class="form-control mb-3">
+               class="form-control mb-3" required>
 
         <!-- address -->
         <input type="text"
                th:field="*{address}"
                class="form-control mb-2"
-               placeholder="Address">
+               placeholder="Address" required>
         <div class="text-danger"
              th:if="${#fields.hasErrors('address')}"
              th:errors="*{address}"></div>

@@ -7,6 +7,5 @@ import java.util.List;
 
 public interface TransactionRepository extends JpaRepository<Transaction, Long> {
 
-    List<Transaction> findByAccountId(Long accountId); // get history/transaction for account
-
+    List<Transaction> findByAccountIdOrderByDateDesc(Long accountId);
 }

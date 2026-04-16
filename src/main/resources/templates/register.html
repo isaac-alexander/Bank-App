@@ -23,25 +23,25 @@
 
         <form th:action="@{/user/register}" method="post" th:object="${user}">
 
-            <input th:field="*{username}" class="form-control mb-3" placeholder="Username">
+            <input th:field="*{username}" class="form-control mb-3" placeholder="Username" required>
 
-            <input th:field="*{phoneNumber}" class="form-control mb-3" placeholder="Phone">
+            <input th:field="*{phoneNumber}" class="form-control mb-3" placeholder="Phone" required>
 
-            <input th:field="*{password}" type="password" class="form-control mb-3" placeholder="Password">
+            <input th:field="*{password}" type="password" class="form-control mb-3" placeholder="Password" required>
 
             <!-- account type selection added -->
-            <select th:field="*{accountType}" class="form-control mb-3">
+            <select th:field="*{accountType}" class="form-control mb-3"  required>
                 <option value="SAVINGS">Savings</option>
                 <option value="CHECKING">Checking</option>
             </select>
 
-            <input th:field="*{firstName}" class="form-control mb-3" placeholder="First Name">
+            <input th:field="*{firstName}" class="form-control mb-3" placeholder="First Name" required>
 
-            <input th:field="*{lastName}" class="form-control mb-3" placeholder="Last Name">
+            <input th:field="*{lastName}" class="form-control mb-3" placeholder="Last Name" required>
 
-            <input th:field="*{dateOfBirth}" type="date" class="form-control mb-3">
+            <input th:field="*{dateOfBirth}" type="date" class="form-control mb-3" required>
 
-            <input th:field="*{address}" class="form-control mb-3" placeholder="Address">
+            <input th:field="*{address}" class="form-control mb-3" placeholder="Address" required>
 
             <button class="btn btn-success w-100">Register</button>
         </form>
